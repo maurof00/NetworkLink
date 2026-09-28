@@ -1,0 +1,4 @@
+name: NetworkLink
+main: it.networklink.bungee.BungeeMain
+version: 0.2.0
+author: NetworkLink

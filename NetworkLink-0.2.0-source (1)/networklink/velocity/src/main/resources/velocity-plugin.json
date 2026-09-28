@@ -1,0 +1,8 @@
+{
+  "id": "networklink",
+  "main": "it.networklink.velocity.VelocityMain",
+  "name": "NetworkLink",
+  "version": "0.1.1",
+  "description": "Cross-proxy network linking and web dashboard.",
+  "authors": ["NetworkLink"]
+}

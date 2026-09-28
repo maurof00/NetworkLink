@@ -1,0 +1,19 @@
+name: NetworkLink
+version: 0.2.0
+main: it.networklink.spigot.SpigotMain
+api-version: '1.21'
+author: NetworkLink
+description: NetworkLink node for Spigot/Paper servers.
+commands:
+  networklink:
+    description: Manage NetworkLink node connections
+    usage: /networklink <status|link|unlink|reload|dashboard|maintenance>
+    aliases: [nl]
+permissions:
+  networklink.admin:
+    description: Allows management of NetworkLink
+    default: op
+
+  networklink.maintenance.bypass:
+    description: Allows players to bypass NetworkLink maintenance mode
+    default: op
