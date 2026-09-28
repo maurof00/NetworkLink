@@ -1,31 +1,2198 @@
 <!doctype html>
 <html lang="it">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NetworkLink Dashboard</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>NetworkLink • Dashboard</title>
+
 <style>
-body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:#0b1020;color:#e7ecff}main{max-width:1220px;margin:0 auto;padding:28px}h1{margin:0 0 8px}h2{margin:0 0 12px}p{color:#9ca9cb}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}.card{background:#121a31;border:1px solid #24304f;border-radius:14px;padding:18px;box-shadow:0 8px 30px #0003}.row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.pill{border-radius:999px;padding:4px 9px;font-size:12px;white-space:nowrap}.ok{background:#173b2a;color:#7ee2a8}.off{background:#4a2023;color:#ff9ea6}.maint{background:#4b3515;color:#ffd27a}.muted{color:#91a0c3}.servers{margin-top:14px;border-top:1px solid #24304f;padding-top:10px}.server{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #1b2540}.server:last-child{border-bottom:0}.form{display:grid;grid-template-columns:1fr 1.4fr 1.4fr auto;gap:8px;margin-top:12px}.form input,.reason{background:#0b1020;color:#fff;border:1px solid #2a3558;border-radius:9px;padding:10px}.form button,.actions button,button{border:0;border-radius:9px;padding:10px 14px;cursor:pointer}.primary{background:#dbe7ff;color:#0b1020}.danger{background:#4a2023;color:#fff}.maintenance{background:#664718;color:#fff}.linkline{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #24304f;align-items:center}.footer{margin-top:20px;font-size:12px;color:#7080a7}.maintbox{margin-top:12px;padding:10px;border-radius:10px;background:#0f1528;border:1px solid #263352}.maintbox .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.small{font-size:13px}@media(max-width:750px){.form{grid-template-columns:1fr}.form button{width:100%}}
-</style></head>
-<body><main>
-<div class="row"><div><h1>NetworkLink</h1><p>Stato dei nodi, server/backend collegati e modalità manutenzione.</p></div><div><button onclick="setToken()">Token</button></div></div>
-<div id="content" class="grid"></div>
-<div class="card" style="margin-top:14px"><h2>Aggiungi collegamento nodo</h2>
-<div class="form"><input id="id" placeholder="ID, es. LOBBY"><input id="url" placeholder="http://10.0.0.20:8090"><input id="token" placeholder="Token del nodo remoto" type="password"><button class="primary" onclick="addLink()">Collega</button></div>
-<div id="links" style="margin-top:12px"></div></div>
-<div class="footer">NetworkLink 0.2.0 · il token dashboard viene salvato solo nel localStorage del browser.</div>
-</main>
+:root{
+  --bg:#070b14;
+  --panel:#0d1424;
+  --panel-2:#111a2d;
+  --line:rgba(255,255,255,.08);
+  --text:#edf3ff;
+  --muted:#8f9bb6;
+  --blue:#7c9cff;
+  --blue-2:#a9baff;
+  --green:#4ed79b;
+  --red:#ff6f7d;
+  --amber:#ffbf69;
+  --shadow:0 24px 70px rgba(0,0,0,.34);
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin:0;
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 15% -5%,rgba(124,156,255,.20),transparent 32%),
+    radial-gradient(circle at 100% 10%,rgba(78,215,155,.08),transparent 24%),
+    var(--bg);
+  min-height:100vh;
+}
+
+button,
+input{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.app{
+  max-width:1460px;
+  margin:0 auto;
+  padding:28px;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:26px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:13px;
+}
+
+.brandmark{
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(145deg,#9db4ff,#5d77da);
+  box-shadow:0 12px 30px rgba(92,119,218,.28);
+}
+
+.brandmark svg{
+  width:25px;
+  height:25px;
+}
+
+.eyebrow{
+  margin:0 0 4px;
+  color:var(--blue-2);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+
+.brand h1{
+  margin:0;
+  font-size:24px;
+  letter-spacing:-.03em;
+}
+
+.brand p{
+  margin:5px 0 0;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.top-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.btn{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.045);
+  color:var(--text);
+  padding:10px 14px;
+  border-radius:12px;
+  transition:.2s ease;
+}
+
+.btn:hover{
+  background:rgba(255,255,255,.08);
+  transform:translateY(-1px);
+}
+
+.btn.primary{
+  border-color:transparent;
+  background:linear-gradient(135deg,#8ca7ff,#627ee0);
+  box-shadow:0 10px 24px rgba(98,126,224,.24);
+}
+
+.btn.danger{
+  background:rgba(255,111,125,.11);
+  color:#ffabb3;
+  border-color:rgba(255,111,125,.18);
+}
+
+.btn.maintenance{
+  background:rgba(255,191,105,.12);
+  color:#ffd597;
+  border-color:rgba(255,191,105,.18);
+}
+
+.btn.small{
+  padding:8px 11px;
+  font-size:12px;
+}
+
+.hero{
+  display:grid;
+  grid-template-columns:1.6fr .9fr;
+  gap:16px;
+  margin-bottom:16px;
+}
+
+.hero-card,
+.stat-card,
+.panel,
+.node-card{
+  border:1px solid var(--line);
+  background:linear-gradient(
+    180deg,
+    rgba(17,26,45,.88),
+    rgba(10,16,29,.92)
+  );
+  box-shadow:var(--shadow);
+  border-radius:22px;
+}
+
+.hero-card{
+  padding:25px;
+  position:relative;
+  overflow:hidden;
+}
+
+.hero-card:after{
+  content:"";
+  position:absolute;
+  width:280px;
+  height:280px;
+  right:-100px;
+  top:-110px;
+  border-radius:50%;
+  background:radial-gradient(
+    circle,
+    rgba(124,156,255,.22),
+    transparent 67%
+  );
+}
+
+.hero-main{
+  position:relative;
+  z-index:1;
+}
+
+.hero-title{
+  font-size:31px;
+  letter-spacing:-.045em;
+  margin:0 0 9px;
+}
+
+.hero-subtitle{
+  color:var(--muted);
+  margin:0;
+  max-width:710px;
+  line-height:1.55;
+}
+
+.hero-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:19px;
+}
+
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.045);
+  padding:7px 10px;
+  border-radius:999px;
+  font-size:12px;
+  color:#cbd5eb;
+}
+
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#66728e;
+}
+
+.dot.green{
+  background:var(--green);
+  box-shadow:0 0 0 5px rgba(78,215,155,.10);
+}
+
+.dot.red{
+  background:var(--red);
+}
+
+.dot.amber{
+  background:var(--amber);
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.stat-card{
+  padding:18px;
+  min-height:118px;
+}
+
+.stat-label{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.stat-value{
+  font-size:30px;
+  font-weight:750;
+  letter-spacing:-.04em;
+  margin-top:14px;
+}
+
+.stat-foot{
+  margin-top:6px;
+  color:#71809d;
+  font-size:11px;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.65fr) minmax(320px,.85fr);
+  gap:16px;
+}
+
+.stack{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.panel{
+  padding:21px;
+}
+
+.panel-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:16px;
+}
+
+.panel-head h2{
+  font-size:17px;
+  margin:0;
+  letter-spacing:-.02em;
+}
+
+.panel-head p{
+  margin:5px 0 0;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.section-tools{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.nodes{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.node-card{
+  padding:18px;
+  box-shadow:none;
+  background:rgba(255,255,255,.025);
+}
+
+.node-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.node-title{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.node-icon{
+  width:36px;
+  height:36px;
+  border-radius:11px;
+  display:grid;
+  place-items:center;
+  background:rgba(124,156,255,.11);
+  border:1px solid rgba(124,156,255,.12);
+  color:#cbd7ff;
+  font-weight:800;
+}
+
+.node-name{
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.node-id{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:2px;
+}
+
+.badges{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 8px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+
+.badge.online{
+  background:rgba(78,215,155,.11);
+  color:#88e9ba;
+}
+
+.badge.offline{
+  background:rgba(255,111,125,.11);
+  color:#ff9ea8;
+}
+
+.badge.maint{
+  background:rgba(255,191,105,.11);
+  color:#ffd597;
+}
+
+.node-stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+  margin:16px 0;
+}
+
+.mini{
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:12px;
+  padding:10px;
+}
+
+.mini .k{
+  color:var(--muted);
+  font-size:10px;
+}
+
+.mini .v{
+  font-weight:700;
+  margin-top:4px;
+}
+
+.backend-list{
+  border-top:1px solid var(--line);
+  margin-top:8px;
+}
+
+.backend{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+}
+
+.backend:last-child{
+  border-bottom:0;
+}
+
+.backend-name{
+  font-size:12px;
+  font-weight:650;
+}
+
+.backend-address{
+  color:#6f7d99;
+  font-size:10px;
+  margin-top:3px;
+}
+
+.backend-right{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  white-space:nowrap;
+}
+
+.backend-players{
+  font-size:11px;
+  color:#b9c4d9;
+}
+
+.backend-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#647089;
+}
+
+.backend-dot.green{
+  background:var(--green);
+}
+
+.backend-dot.red{
+  background:var(--red);
+}
+
+.maint-box{
+  margin-top:14px;
+  border:1px solid rgba(255,191,105,.18);
+  background:rgba(255,191,105,.055);
+  border-radius:14px;
+  padding:12px;
+}
+
+.maint-box strong{
+  font-size:11px;
+  color:#ffd597;
+}
+
+.maint-reason{
+  margin-top:4px;
+  color:#b8a98e;
+  font-size:11px;
+  line-height:1.45;
+}
+
+.maint-actions{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.reason-input{
+  width:100%;
+  margin-top:9px;
+  background:#080d18;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:9px 10px;
+  font-size:11px;
+  outline:none;
+}
+
+.reason-input:focus{
+  border-color:rgba(124,156,255,.45);
+  box-shadow:0 0 0 3px rgba(124,156,255,.08);
+}
+
+.link-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.link-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 13px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.025);
+  border-radius:13px;
+}
+
+.link-main{
+  min-width:0;
+}
+
+.link-name{
+  font-size:12px;
+  font-weight:700;
+}
+
+.link-url{
+  font-size:10px;
+  color:#6f7d99;
+  margin-top:3px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.form{
+  display:grid;
+  grid-template-columns:.8fr 1.25fr 1fr auto;
+  gap:8px;
+}
+
+.field{
+  width:100%;
+  background:#080d18;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:11px;
+  padding:11px 12px;
+  outline:none;
+}
+
+.field::placeholder{
+  color:#57637b;
+}
+
+.field:focus{
+  border-color:rgba(124,156,255,.45);
+  box-shadow:0 0 0 3px rgba(124,156,255,.08);
+}
+
+.token-box{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 13px;
+  border:1px dashed rgba(124,156,255,.2);
+  border-radius:14px;
+  background:rgba(124,156,255,.045);
+}
+
+.token-box strong{
+  font-size:12px;
+}
+
+.token-box span{
+  font-size:10px;
+  color:var(--muted);
+  display:block;
+  margin-top:3px;
+}
+
+.empty{
+  padding:32px 18px;
+  text-align:center;
+  color:var(--muted);
+  border:1px dashed var(--line);
+  border-radius:14px;
+}
+
+.footer{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-top:18px;
+  color:#5f6d87;
+  font-size:10px;
+  padding:0 4px;
+}
+
+.live{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.live i{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 0 4px rgba(78,215,155,.09);
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.60);
+  backdrop-filter:blur(8px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:20;
+}
+
+.modal{
+  width:min(430px,100%);
+  border-radius:20px;
+  border:1px solid var(--line);
+  background:#0d1424;
+  box-shadow:0 30px 90px rgba(0,0,0,.50);
+  padding:22px;
+}
+
+.modal h3{
+  margin:0;
+  font-size:18px;
+}
+
+.modal p{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+}
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:16px;
+}
+
+.toast{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  display:none;
+  z-index:30;
+  background:#121b2e;
+  border:1px solid var(--line);
+  border-radius:13px;
+  padding:12px 14px;
+  box-shadow:var(--shadow);
+  font-size:12px;
+}
+
+@media(max-width:1120px){
+  .hero{
+    grid-template-columns:1fr;
+  }
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .stats{
+    grid-template-columns:repeat(4,1fr);
+  }
+}
+
+@media(max-width:760px){
+  .app{
+    padding:17px;
+  }
+
+  .topbar{
+    align-items:flex-start;
+  }
+
+  .top-actions{
+    flex-wrap:wrap;
+  }
+
+  .hero-title{
+    font-size:26px;
+  }
+
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .nodes{
+    grid-template-columns:1fr;
+  }
+
+  .form{
+    grid-template-columns:1fr;
+  }
+
+  .form .btn{
+    width:100%;
+  }
+
+  .panel{
+    padding:16px;
+  }
+
+  .footer{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header class="topbar">
+
+    <div class="brand">
+
+      <div class="brandmark">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M7 7h4v4H7zM13 13h4v4h-4z"/>
+          <path d="M11 9h2v6h-2zM9 11h6v2H9z"/>
+        </svg>
+      </div>
+
+      <div>
+        <p class="eyebrow">Network management</p>
+        <h1>NetworkLink</h1>
+        <p>Controllo centralizzato di proxy, backend e manutenzione.</p>
+      </div>
+
+    </div>
+
+    <div class="top-actions">
+
+      <span class="chip live">
+        <i></i>
+        Live ·
+        <span id="refreshText">aggiornamento</span>
+      </span>
+
+      <button class="btn" onclick="openToken()">
+        Token
+      </button>
+
+      <button class="btn primary" onclick="load(true)">
+        Aggiorna
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <section class="hero">
+
+    <div class="hero-card">
+
+      <div class="hero-main">
+
+        <h2 class="hero-title">
+          La tua rete, a colpo d'occhio.
+        </h2>
+
+        <p class="hero-subtitle">
+          Monitora i nodi collegati, controlla i backend e attiva
+          la manutenzione quando serve. Lo stato viene aggiornato
+          automaticamente ogni 3 secondi.
+        </p>
+
+        <div class="hero-meta">
+
+          <span class="chip">
+            <span id="localDot" class="dot"></span>
+            <span id="localState">Nodo locale</span>
+          </span>
+
+          <span class="chip">
+            🔐 Dashboard protetta
+          </span>
+
+          <span class="chip">
+            ⚡ Polling 3s
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+  </section>
+
+
+  <div class="layout">
+
+    <div class="stack">
+
+      <section class="panel">
+
+        <div class="panel-head">
+
+          <div>
+            <h2>Nodi collegati</h2>
+            <p>
+              Proxy e server NetworkLink visibili dalla rete locale.
+            </p>
+          </div>
+
+          <div class="section-tools">
+
+            <button
+              class="btn small"
+              onclick="load(true)"
+            >
+              ↻ Ricarica
+            </button>
+
+          </div>
+
+        </div>
+
+        <div id="nodes" class="nodes"></div>
+
+      </section>
+
+
+      <section class="panel">
+
+        <div class="panel-head">
+
+          <div>
+            <h2>Collegamenti</h2>
+            <p>
+              Gestisci gli endpoint che questo nodo può interrogare.
+            </p>
+          </div>
+
+        </div>
+
+        <div id="links" class="link-list"></div>
+
+      </section>
+
+    </div>
+
+
+    <aside class="stack">
+
+      <section class="panel">
+
+        <div class="panel-head">
+
+          <div>
+            <h2>Nuovo collegamento</h2>
+            <p>
+              Aggiungi un proxy o server NetworkLink.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="form">
+
+          <input
+            class="field"
+            id="id"
+            placeholder="ID, es. LOBBY"
+          >
+
+          <input
+            class="field"
+            id="url"
+            placeholder="http://10.0.0.20:8090"
+          >
+
+          <input
+            class="field"
+            id="linkToken"
+            placeholder="Token nodo remoto"
+            type="password"
+          >
+
+          <button
+            class="btn primary"
+            onclick="addLink()"
+          >
+            Collega
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <section class="panel">
+
+        <div class="panel-head">
+
+          <div>
+            <h2>Accesso dashboard</h2>
+            <p>
+              Il token resta salvato solo nel browser.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="token-box">
+
+          <div>
+
+            <strong id="tokenStatus">
+              Token non configurato
+            </strong>
+
+            <span>
+              Usato solo per autenticare le richieste
+              alla dashboard.
+            </span>
+
+          </div>
+
+          <button
+            class="btn small"
+            onclick="openToken()"
+          >
+            Configura
+          </button>
+
+        </div>
+
+      </section>
+
+    </aside>
+
+  </div>
+
+
+  <div class="footer">
+
+    <span>
+      NetworkLink 0.2.1
+    </span>
+
+    <span id="updatedAt">
+      Ultimo aggiornamento: —
+    </span>
+
+  </div>
+
+</div>
+
+
+<div
+  class="overlay"
+  id="tokenModal"
+>
+
+  <div class="modal">
+
+    <h3>
+      Token dashboard
+    </h3>
+
+    <p>
+      Inserisci il token configurato nel nodo NetworkLink.
+      Viene memorizzato nel <code>localStorage</code> del browser
+      e non viene incluso nella pagina.
+    </p>
+
+    <input
+      class="field"
+      id="dashboardTokenInput"
+      placeholder="Token dashboard"
+      type="password"
+    >
+
+    <div class="modal-actions">
+
+      <button
+        class="btn"
+        onclick="closeToken()"
+      >
+        Annulla
+      </button>
+
+      <button
+        class="btn primary"
+        onclick="saveToken()"
+      >
+        Salva token
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<div
+  class="toast"
+  id="toast"
+></div>
+
+
 <script>
-const key='networklink-token';
-function token(){return localStorage.getItem(key)||''}
-function setToken(){const t=prompt('Token dashboard:');if(t){localStorage.setItem(key,t);load()}}
-async function api(path,opt={}){opt.headers=Object.assign({'X-NetworkLink-Token':token()},opt.headers||{});const r=await fetch(path,opt);if(!r.ok)throw new Error(await r.text());return r.json()}
-function maintenanceBadge(s){return s.maintenance?'<span class="pill maint">MANUTENZIONE</span>':''}
-function maintenanceBox(id,enabled,reason,remote){const action=enabled?'Disattiva manutenzione':'Attiva manutenzione';const btnClass=enabled?'danger':'maintenance';const safeId=encodeURIComponent(id);return `<div class="maintbox"><div class="row"><b>Manutenzione</b>${enabled?'<span class="pill maint">ATTIVA</span>':'<span class="pill ok">DISATTIVA</span>'}</div>${enabled&&reason?`<p class="small" style="margin:8px 0 0">${esc(reason)}</p>`:''}<input class="reason" id="reason-${safeId}-${remote?'r':'l'}" style="width:calc(100% - 22px);margin-top:9px" placeholder="Motivo (opzionale)"><div class="actions"><button class="${btnClass}" onclick="toggleMaintenance('${safeId}',${remote},${enabled})">${action}</button></div></div>`}
-function card(s,remote=false,linkId=null){const cls=s.online?'ok':'off',txt=s.online?'ONLINE':'OFFLINE';const target=linkId||s.id;return `<div class="card"><div class="row"><div><b>${esc(s.name)}</b><div class="muted small">${esc(s.id)} · ${esc(s.platform)} · giocatori ${s.players}</div></div><div>${maintenanceBadge(s)} <span class="pill ${cls}">${txt}</span></div></div>${s.maintenance?`<div class="maintbox"><b>Server in manutenzione</b><p class="small">${esc(s.maintenanceReason||'Server in manutenzione.')}</p></div>`:''}<div class="servers">${s.servers.length?s.servers.map(v=>`<div class="server"><span><b>${esc(v.name)}</b><div class="muted small">${esc(v.address)}</div></span><span>${v.maintenance?'<span class="pill maint">MAINT</span> ':''}${v.online?'🟢':'🔴'} ${v.players}</span></div>`).join(''):'<div class="muted small">Nessun backend registrato.</div>'}</div>${maintenanceBox(target,s.maintenance,s.maintenanceReason,remote)}</div>`}
-function esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-async function load(){if(!token()){document.getElementById('content').innerHTML='<div class="card"><b>Inserisci il token dashboard.</b><p>Premi “Token” in alto a destra.</p></div>';return}try{const d=await api('/api/v1/dashboard');let html='';if(d.local)html+=card(d.local,false,d.local.id);for(const l of d.links){if(l.snapshot)html+=card(l.snapshot,true,l.id);else html+=`<div class="card"><div class="row"><b>${esc(l.id)}</b><span class="pill off">OFFLINE</span></div><p>${esc(l.url)}</p></div>`}document.getElementById('content').innerHTML=html||'<div class="card">Nessun nodo disponibile.</div>';document.getElementById('links').innerHTML=d.links.map(l=>`<div class="linkline"><span><b>${esc(l.id)}</b> <span class="muted">${esc(l.url)}</span></span><button class="danger" onclick="removeLink('${encodeURIComponent(l.id)}')">Rimuovi</button></div>`).join('')}catch(e){document.getElementById('content').innerHTML='<div class="card"><b>Errore autenticazione o dashboard non raggiungibile.</b><p>'+esc(e.message)+'</p></div>'}}
-async function toggleMaintenance(id,remote,enabled){const decoded=decodeURIComponent(id);const suffix=remote?'r':'l';const reasonEl=document.getElementById('reason-'+id+'-'+suffix);const reason=reasonEl?reasonEl.value:'';try{const data=new URLSearchParams({enabled:String(!enabled),reason});if(remote)data.set('id',decoded);await api(remote?'/api/v1/remote-maintenance':'/api/v1/maintenance',{method:'POST',body:data});await load()}catch(e){alert(e.message)}}
-async function addLink(){try{const data=new URLSearchParams({id:document.getElementById('id').value,url:document.getElementById('url').value,token:document.getElementById('token').value});await api('/api/v1/links',{method:'POST',body:data});document.getElementById('id').value='';document.getElementById('url').value='';document.getElementById('token').value='';load()}catch(e){alert(e.message)}}
-async function removeLink(id){try{await api('/api/v1/links?id='+id,{method:'DELETE'});load()}catch(e){alert(e.message)}}
-load();setInterval(load,3000);
-</script></body></html>
+
+const key = 'networklink-token';
+
+const POLL_MS = 3000;
+
+let busy = false;
+
+
+/* =========================
+   TOKEN
+   ========================= */
+
+function token(){
+
+  return localStorage.getItem(key) || '';
+
+}
+
+
+function openToken(){
+
+  document.getElementById(
+    'dashboardTokenInput'
+  ).value = token();
+
+  document.getElementById(
+    'tokenModal'
+  ).style.display = 'flex';
+
+  setTimeout(() => {
+
+    document
+      .getElementById('dashboardTokenInput')
+      .focus();
+
+  }, 30);
+
+}
+
+
+function closeToken(){
+
+  document.getElementById(
+    'tokenModal'
+  ).style.display = 'none';
+
+}
+
+
+function saveToken(){
+
+  const t = document
+    .getElementById('dashboardTokenInput')
+    .value
+    .trim();
+
+  if(t){
+
+    localStorage.setItem(key,t);
+
+  }else{
+
+    localStorage.removeItem(key);
+
+  }
+
+  closeToken();
+
+  load(true);
+
+}
+
+
+/* =========================
+   UTILS
+   ========================= */
+
+function esc(v){
+
+  return String(v ?? '').replace(
+    /[&<>'"]/g,
+    c => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      "'":'&#39;',
+      '"':'&quot;'
+    }[c])
+  );
+
+}
+
+
+function toast(msg){
+
+  const el = document.getElementById('toast');
+
+  el.textContent = msg;
+
+  el.style.display = 'block';
+
+  clearTimeout(window.__toast);
+
+  window.__toast = setTimeout(
+    () => el.style.display = 'none',
+    2600
+  );
+
+}
+
+
+async function api(path,opt={}){
+
+  opt.headers = Object.assign(
+    {
+      'X-NetworkLink-Token': token()
+    },
+    opt.headers || {}
+  );
+
+  const r = await fetch(path,opt);
+
+  if(!r.ok){
+
+    throw new Error(
+      await r.text() ||
+      ('HTTP ' + r.status)
+    );
+
+  }
+
+  return r.json();
+
+}
+
+
+/* =========================
+   NODE UI
+   ========================= */
+
+function nodeIcon(platform){
+
+  const p = String(
+    platform || ''
+  ).toUpperCase();
+
+  if(p.includes('VELOCITY'))
+    return 'V';
+
+  if(p.includes('BUNGEE'))
+    return 'B';
+
+  return 'S';
+
+}
+
+
+function statusBadge(online){
+
+  if(online){
+
+    return `
+      <span class="badge online">
+        <span class="dot green"></span>
+        ONLINE
+      </span>
+    `;
+
+  }
+
+  return `
+    <span class="badge offline">
+      <span class="dot red"></span>
+      OFFLINE
+    </span>
+  `;
+
+}
+
+
+function maintenanceBadge(active){
+
+  if(!active)
+    return '';
+
+  return `
+    <span class="badge maint">
+      <span class="dot amber"></span>
+      MANUTENZIONE
+    </span>
+  `;
+
+}
+
+
+/* =========================
+   NODE CARD
+   ========================= */
+
+function nodeCard(s,local=false){
+
+  const safeId =
+    encodeURIComponent(s.id);
+
+  const inputId =
+    'reason-' +
+    safeId +
+    '-' +
+    (local ? 'local' : 'remote');
+
+  const action =
+    s.maintenance
+      ? 'Disattiva manutenzione'
+      : 'Attiva manutenzione';
+
+  const cls =
+    s.maintenance
+      ? 'danger'
+      : 'maintenance';
+
+  const backends =
+    s.servers || [];
+
+  return `
+    <article class="node-card">
+
+      <div class="node-head">
+
+        <div class="node-title">
+
+          <div class="node-icon">
+            ${esc(nodeIcon(s.platform))}
+          </div>
+
+          <div>
+
+            <div class="node-name">
+              ${esc(s.name)}
+            </div>
+
+            <div class="node-id">
+              ${esc(s.id)}
+              ·
+              ${esc(s.platform)}
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="badges">
+
+          ${maintenanceBadge(s.maintenance)}
+
+          ${statusBadge(s.online)}
+
+        </div>
+
+      </div>
+
+
+      <div class="node-stats">
+
+        <div class="mini">
+
+          <div class="k">
+            Giocatori
+          </div>
+
+          <div class="v">
+            ${Number(s.players || 0)}
+          </div>
+
+        </div>
+
+        <div class="mini">
+
+          <div class="k">
+            Backend
+          </div>
+
+          <div class="v">
+            ${backends.length}
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="backend-list">
+
+        ${
+          backends.length
+            ?
+            backends
+              .map(
+                v => `
+                  <div class="backend">
+
+                    <div>
+
+                      <div class="backend-name">
+                        ${esc(v.name)}
+                      </div>
+
+                      <div class="backend-address">
+                        ${esc(v.address)}
+                      </div>
+
+                    </div>
+
+                    <div class="backend-right">
+
+                      ${
+                        v.maintenance
+                          ?
+                          `
+                            <span class="badge maint">
+                              MAINT
+                            </span>
+                          `
+                          :
+                          ''
+                      }
+
+                      <span class="backend-players">
+                        ${Number(v.players || 0)}
+                        player
+                      </span>
+
+                      <span
+                        class="backend-dot ${
+                          v.online
+                            ? 'green'
+                            : 'red'
+                        }"
+                      ></span>
+
+                    </div>
+
+                  </div>
+                `
+              )
+              .join('')
+            :
+            `
+              <div class="empty">
+                Nessun backend registrato
+                su questo nodo.
+              </div>
+            `
+        }
+
+      </div>
+
+
+      ${
+        s.maintenance
+          ?
+          `
+            <div class="maint-box">
+
+              <strong>
+                SERVER IN MANUTENZIONE
+              </strong>
+
+              <div class="maint-reason">
+                ${esc(
+                  s.maintenanceReason ||
+                  'Manutenzione attiva.'
+                )}
+              </div>
+
+            </div>
+          `
+          :
+          ''
+      }
+
+
+      <div class="maint-actions">
+
+        <input
+          class="reason-input"
+          id="${inputId}"
+          placeholder="Motivo (opzionale)"
+        >
+
+        <button
+          class="btn small ${cls}"
+          onclick="toggleMaintenance(
+            '${safeId}',
+            ${local},
+            ${s.maintenance}
+          )"
+        >
+          ${action}
+        </button>
+
+      </div>
+
+    </article>
+  `;
+
+}
+
+
+/* =========================
+   STATS
+   ========================= */
+
+function renderStats(local,remoteNodes){
+
+  const all = [
+    ...(local ? [local] : []),
+    ...remoteNodes
+  ];
+
+  const players =
+    all.reduce(
+      (n,s) =>
+        n + Number(s.players || 0),
+      0
+    );
+
+  const backends =
+    all.reduce(
+      (n,s) =>
+        n + (s.servers || []).length,
+      0
+    );
+
+  const maintenance =
+    all.filter(
+      s => s.maintenance
+    ).length;
+
+  const online =
+    all.filter(
+      s => s.online
+    ).length;
+
+  document.getElementById(
+    'stats'
+  ).innerHTML = `
+
+    <div class="stat-card">
+
+      <div class="stat-label">
+        Nodi online
+      </div>
+
+      <div class="stat-value">
+        ${online}/${all.length}
+      </div>
+
+      <div class="stat-foot">
+        Stato complessivo
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-label">
+        Giocatori
+      </div>
+
+      <div class="stat-value">
+        ${players}
+      </div>
+
+      <div class="stat-foot">
+        Su tutti i nodi
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-label">
+        Backend
+      </div>
+
+      <div class="stat-value">
+        ${backends}
+      </div>
+
+      <div class="stat-foot">
+        Server registrati
+      </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+      <div class="stat-label">
+        Manutenzioni
+      </div>
+
+      <div class="stat-value">
+        ${maintenance}
+      </div>
+
+      <div class="stat-foot">
+        Nodi in manutenzione
+      </div>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================
+   LINKS
+   ========================= */
+
+function renderLinks(links){
+
+  const el =
+    document.getElementById('links');
+
+  if(!links.length){
+
+    el.innerHTML =
+      `
+        <div class="empty">
+          Nessun collegamento configurato.
+        </div>
+      `;
+
+    return;
+
+  }
+
+  el.innerHTML =
+    links
+      .map(
+        l => `
+
+          <div class="link-row">
+
+            <div class="link-main">
+
+              <div class="link-name">
+                ${esc(l.id)}
+              </div>
+
+              <div class="link-url">
+                ${esc(l.url)}
+              </div>
+
+            </div>
+
+            <button
+              class="btn small danger"
+              onclick="removeLink(
+                '${encodeURIComponent(l.id)}'
+              )"
+            >
+              Rimuovi
+            </button>
+
+          </div>
+
+        `
+      )
+      .join('');
+
+}
+
+
+/* =========================
+   LOAD DASHBOARD
+   ========================= */
+
+async function load(manual=false){
+
+  if(busy)
+    return;
+
+  if(!token()){
+
+    document.getElementById(
+      'nodes'
+    ).innerHTML = `
+      <div class="empty">
+        Inserisci il token per visualizzare
+        lo stato della rete.
+      </div>
+    `;
+
+    document.getElementById(
+      'links'
+    ).innerHTML = `
+      <div class="empty">
+        Configura il token della dashboard
+        per iniziare.
+      </div>
+    `;
+
+    document.getElementById(
+      'stats'
+    ).innerHTML = '';
+
+    document.getElementById(
+      'tokenStatus'
+    ).textContent =
+      'Token non configurato';
+
+    return;
+
+  }
+
+
+  busy = true;
+
+
+  try{
+
+    const d =
+      await api(
+        '/api/v1/dashboard'
+      );
+
+
+    const remote =
+      (d.links || [])
+        .map(
+          x => x.snapshot
+        )
+        .filter(Boolean);
+
+
+    const nodes = [];
+
+
+    if(d.local){
+
+      nodes.push(
+        nodeCard(
+          d.local,
+          true
+        )
+      );
+
+    }
+
+
+    for(
+      const l of
+      (d.links || [])
+    ){
+
+      if(l.snapshot){
+
+        nodes.push(
+          nodeCard(
+            l.snapshot,
+            false
+          )
+        );
+
+      }else{
+
+        nodes.push(`
+
+          <article class="node-card">
+
+            <div class="node-head">
+
+              <div class="node-title">
+
+                <div class="node-icon">
+                  ?
+                </div>
+
+                <div>
+
+                  <div class="node-name">
+                    ${esc(l.id)}
+                  </div>
+
+                  <div class="node-id">
+                    Nodo remoto
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <div class="badges">
+
+                <span class="badge offline">
+
+                  <span class="dot red"></span>
+
+                  OFFLINE
+
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div
+              class="empty"
+              style="margin-top:15px"
+            >
+
+              Endpoint non raggiungibile.
+
+              <br>
+
+              <span
+                style="font-size:10px"
+              >
+                ${esc(l.url)}
+              </span>
+
+            </div>
+
+          </article>
+
+        `);
+
+      }
+
+    }
+
+
+    document.getElementById(
+      'nodes'
+    ).innerHTML =
+      nodes.length
+        ?
+        nodes.join('')
+        :
+        `
+          <div class="empty">
+            Nessun nodo disponibile.
+          </div>
+        `;
+
+
+    renderStats(
+      d.local,
+      remote
+    );
+
+
+    renderLinks(
+      d.links || []
+    );
+
+
+    const now =
+      new Date();
+
+
+    document.getElementById(
+      'updatedAt'
+    ).textContent =
+      'Ultimo aggiornamento: ' +
+      now.toLocaleTimeString();
+
+
+    document.getElementById(
+      'refreshText'
+    ).textContent =
+      manual
+        ?
+        'appena aggiornato'
+        :
+        'live';
+
+
+    document.getElementById(
+      'localState'
+    ).textContent =
+      d.local
+        ?
+        (
+          d.local.maintenance
+            ?
+            'Nodo locale · manutenzione'
+            :
+            (
+              d.local.online
+                ?
+                'Nodo locale · online'
+                :
+                'Nodo locale · offline'
+            )
+        )
+        :
+        'Nodo locale';
+
+
+    const dot =
+      document.getElementById(
+        'localDot'
+      );
+
+
+    dot.className =
+      'dot ' +
+      (
+        d.local?.maintenance
+          ?
+          'amber'
+          :
+          d.local?.online
+            ?
+            'green'
+            :
+            'red'
+      );
+
+
+    document.getElementById(
+      'tokenStatus'
+    ).textContent =
+      'Token configurato';
+
+
+  }catch(e){
+
+    document.getElementById(
+      'nodes'
+    ).innerHTML = `
+
+      <div class="empty">
+
+        Impossibile leggere
+        la dashboard.
+
+        <br>
+
+        <span style="font-size:10px">
+          ${esc(e.message)}
+        </span>
+
+      </div>
+
+    `;
+
+
+    document.getElementById(
+      'tokenStatus'
+    ).textContent =
+      'Token non valido o dashboard offline';
+
+
+    if(manual){
+
+      toast(
+        'Errore: ' +
+        e.message
+      );
+
+    }
+
+  }finally{
+
+    busy = false;
+
+  }
+
+}
+
+
+/* =========================
+   MAINTENANCE
+   ========================= */
+
+async function toggleMaintenance(
+  id,
+  local,
+  enabled
+){
+
+  const decoded =
+    decodeURIComponent(id);
+
+  const suffix =
+    local
+      ? 'local'
+      : 'remote';
+
+
+  const el =
+    document.getElementById(
+      'reason-' +
+      id +
+      '-' +
+      suffix
+    );
+
+
+  const reason =
+    el
+      ? el.value
+      : '';
+
+
+  try{
+
+    const data =
+      new URLSearchParams({
+        enabled:
+          String(!enabled),
+
+        reason
+      });
+
+
+    if(local){
+
+      await api(
+        '/api/v1/maintenance',
+        {
+          method:'POST',
+          body:data
+        }
+      );
+
+    }else{
+
+      data.set(
+        'id',
+        decoded
+      );
+
+      await api(
+        '/api/v1/remote-maintenance',
+        {
+          method:'POST',
+          body:data
+        }
+      );
+
+    }
+
+
+    toast(
+      !enabled
+        ?
+        'Manutenzione attivata'
+        :
+        'Manutenzione disattivata'
+    );
+
+
+    await load(true);
+
+
+  }catch(e){
+
+    toast(
+      'Operazione non riuscita: ' +
+      e.message
+    );
+
+  }
+
+}
+
+
+/* =========================
+   ADD LINK
+   ========================= */
+
+async function addLink(){
+
+  const id =
+    document
+      .getElementById('id')
+      .value
+      .trim();
+
+  const url =
+    document
+      .getElementById('url')
+      .value
+      .trim();
+
+  const linkToken =
+    document
+      .getElementById('linkToken')
+      .value
+      .trim();
+
+
+  if(!id || !url){
+
+    toast(
+      'ID e URL sono obbligatori'
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    const data =
+      new URLSearchParams({
+        id,
+        url,
+        token:linkToken
+      });
+
+
+    await api(
+      '/api/v1/links',
+      {
+        method:'POST',
+        body:data
+      }
+    );
+
+
+    [
+      'id',
+      'url',
+      'linkToken'
+    ].forEach(
+      x =>
+        document
+          .getElementById(x)
+          .value = ''
+    );
+
+
+    toast(
+      'Collegamento aggiunto'
+    );
+
+
+    await load(true);
+
+
+  }catch(e){
+
+    toast(
+      'Errore: ' +
+      e.message
+    );
+
+  }
+
+}
+
+
+/* =========================
+   REMOVE LINK
+   ========================= */
+
+async function removeLink(id){
+
+  try{
+
+    await api(
+      '/api/v1/links?id=' +
+      id,
+      {
+        method:'DELETE'
+      }
+    );
+
+
+    toast(
+      'Collegamento rimosso'
+    );
+
+
+    await load(true);
+
+
+  }catch(e){
+
+    toast(
+      'Errore: ' +
+      e.message
+    );
+
+  }
+
+}
+
+
+/* =========================
+   EVENTS
+   ========================= */
+
+document
+  .getElementById('tokenModal')
+  .addEventListener(
+    'click',
+    e => {
+
+      if(
+        e.target ===
+        e.currentTarget
+      ){
+
+        closeToken();
+
+      }
+
+    }
+  );
+
+
+load();
+
+
+setInterval(
+  () => load(false),
+  POLL_MS
+);
+
+</script>
+
+</body>
+</html>
